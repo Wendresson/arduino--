@@ -98,21 +98,30 @@ def verificar_seguranca(texto):
     return False
 
 # -----------------------------------------------------------------------------
-# 3. Cabeçalho, Música de Fundo e Mascote
+# 3. MÚSICA DE FUNDO RELAXANTE AUTOMÁTICA
+# -----------------------------------------------------------------------------
+# URL de áudio instrumental calmo e suave (Piano & Pad ambiente 432Hz)
+url_musica_suave = "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=meditation-piano-112191.mp3"
+
+# Injeta o player HTML5 configurado para Autoplay e Loop contínuo
+st.markdown(
+    f"""
+    <div style="background-color: #1B263B; padding: 10px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #415A77;">
+        <p style="margin: 0 0 5px 0; font-size: 0.85rem; color: #778DA9;">🎵 <b>Música de Acolhimento Ativa:</b> Piano Suave de Relaxamento</p>
+        <audio autoplay loop controls style="width: 100%; height: 30px;">
+            <source src="{url_musica_suave}" type="audio/mp3">
+            Seu navegador não suporta áudio.
+        </audio>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# -----------------------------------------------------------------------------
+# 4. Cabeçalho e Mascote
 # -----------------------------------------------------------------------------
 st.title("💙 AcolheTech")
 st.caption("Do algoritmo ao acolhimento • Assistente de Bem-Estar Escolar")
-
-# --- SELETOR DE MÚSICA DE FUNDO RELAXANTE ---
-with st.expander("🎵 Fundo Musical de Relaxamento (Opcional)"):
-    musica = st.selectbox(
-        "Escolha uma trilha para acompanhar seu acolhimento:",
-        ["Sem Músicas", "Sons Suaves da Natureza / Chuva", "Piano Relaxante"]
-    )
-    if musica == "Sons Suaves da Natureza / Chuva":
-        st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", format="audio/mp3")
-    elif musica == "Piano Relaxante":
-        st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", format="audio/mp3")
 
 # Busca pela imagem do robô
 nomes_possiveis_imagem = [
@@ -146,7 +155,7 @@ if st.session_state.passo != 6:
     mostrar_mascote(animado=False)
 
 # -----------------------------------------------------------------------------
-# 4. Alerta de Crise
+# 5. Alerta de Crise
 # -----------------------------------------------------------------------------
 if st.session_state.crise:
     st.error("🚨 **ATENÇÃO E APOIO IMEDIATO**")
@@ -158,7 +167,7 @@ if st.session_state.crise:
     st.stop()
 
 # -----------------------------------------------------------------------------
-# 5. JORNADA DE 10 PASSAGENS INTERATIVAS
+# 6. JORNADA DE 10 PASSAGENS INTERATIVAS
 # -----------------------------------------------------------------------------
 
 # ETAPA 1: BOAS-VINDAS E NOME
