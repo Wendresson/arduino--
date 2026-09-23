@@ -3,7 +3,7 @@ import time
 import os
 
 # -----------------------------------------------------------------------------
-# 1. Configuração da Página e Estilo CSS (DARK MODE COMPLETO)
+# 1. Configuração da Página e Animações CSS (Dark Mode & Animação do Mascote)
 # -----------------------------------------------------------------------------
 st.set_page_config(
     page_title="AcolheTech - Assistente de Bem-Estar",
@@ -11,26 +11,20 @@ st.set_page_config(
     layout="centered"
 )
 
-# Estilização CSS forçando contraste escuro/claro
+# Estilização CSS incluindo Animação do Mascote
 st.markdown("""
     <style>
-    /* Força o fundo da aplicação para tom escuro */
+    /* Força o fundo escuro */
     .stApp, [data-testid="stAppViewContainer"] {
         background-color: #121824 !important;
     }
     
-    /* Força a cor dos textos e títulos para branco/claros */
+    /* Textos claros */
     html, body, p, span, div, label, h1, h2, h3, h4, h5, h6, .stMarkdown {
         color: #f0f4f8 !important;
     }
     
-    /* Caixas de seleção (Radio Buttons) e rótulos */
-    .stRadio label, div[role="radiogroup"] label p {
-        color: #ffffff !important;
-        font-size: 1.05rem !important;
-    }
-    
-    /* Configuração e visibilidade dos botões */
+    /* Botões interativos */
     .stButton>button {
         width: 100% !important;
         border-radius: 10px !important;
@@ -41,253 +35,244 @@ st.markdown("""
         font-size: 1rem !important;
         border: 1px solid #2980b9 !important;
     }
-    
     .stButton>button:hover {
         background-color: #2980b9 !important;
         border-color: #5dade2 !important;
     }
     
-    /* Estilo dos campos de texto (Input e TextArea) */
+    /* Inputs e Caixas */
     .stTextInput input, .stTextArea textarea {
         color: #ffffff !important;
         background-color: #1c2434 !important;
         border: 1px solid #34495e !important;
-        border-radius: 8px !important;
     }
     
-    /* Alertas e avisos em contraste alto */
-    .stAlert {
-        background-color: #1c2833 !important;
-        border-radius: 10px !important;
+    /* ANIMAÇÕES DO MASCOTE DO ROBOZINHO */
+    @keyframes flutuar {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-8px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    @keyframes respirarMascote {
+        0% { transform: scale(0.85); }
+        50% { transform: scale(1.15); }
+        100% { transform: scale(0.85); }
+    }
+    
+    .robo-estatico {
+        animation: flutuar 3s ease-in-out infinite;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .robo-respirando {
+        animation: respirarMascote 5s ease-in-out infinite;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 2. Inicialização Segura das Variáveis de Sessão
+# 2. Inicialização de Sessão
 # -----------------------------------------------------------------------------
-if "passo" not in st.session_state:
-    st.session_state.passo = 0
-if "nome" not in st.session_state:
-    st.session_state.nome = ""
-if "opcao1" not in st.session_state:
-    st.session_state.opcao1 = ""
-if "opcao2" not in st.session_state:
-    st.session_state.opcao2 = ""
-if "crise" not in st.session_state:
-    st.session_state.crise = False
+if "passo" not in st.session_state: st.session_state.passo = 0
+if "nome" not in st.session_state: st.session_state.nome = ""
+if "sintomas" not in st.session_state: st.session_state.sintomas = []
+if "gatilhos" not in st.session_state: st.session_state.gatilhos = []
+if "crise" not in st.session_state: st.session_state.crise = False
 
 palavras_alerta = ["machucar", "desistir", "morrer", "socorro", "suicidio", "corta", "bater", "panico"]
 
 def verificar_seguranca(texto):
-    if not texto: 
-        return False
+    if not texto: return False
     texto_lc = texto.lower()
     for palavra in palavras_alerta:
-        if palavra in texto_lc: 
-            return True
+        if palavra in texto_lc: return True
     return False
 
 # -----------------------------------------------------------------------------
-# 3. Cabeçalho e Exibição do Mascote
+# 3. Exibição do Mascote (Normal vs Animado)
 # -----------------------------------------------------------------------------
 st.title("💙 AcolheTech")
 st.caption("Do algoritmo ao acolhimento • Assistente de Bem-Estar Escolar")
 
-# Busca pela imagem do robô enviada
-nomes_possiveis_imagem = [
-    "acolhetech robo.png",
-    "acolhetech_robo.png",
-    "acolhetech robo.jpg",
-    "acolhetech_robo.jpg",
-    "acolhetech robo.jpeg",
-    "acolhetech_robo.jpeg",
-    "mascote.png",
-    "robo.png"
-]
-
+nomes_possiveis_imagem = ["acolhetech robo.png", "acolhetech_robo.png", "acolhetech robo.jpg", "mascote.png", "robo.png"]
 imagem_encontrada = None
-
 for nome_file in nomes_possiveis_imagem:
     if os.path.exists(nome_file):
         imagem_encontrada = nome_file
         break
 
-if imagem_encontrada:
-    col_i1, col_i2, col_i3 = st.columns([1, 2, 1])
-    with col_i2:
-        st.image(imagem_encontrada, width=180)
+def mostrar_mascote(animado=False):
+    if imagem_encontrada:
+        classe = "robo-respirando" if animado else "robo-estatico"
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            st.markdown(f'<img src="data:image/png;base64,{st.session_state.get("img_base64", "")}" class="{classe}" width="160">', unsafe_allow_html=True) if "img_base64" in st.session_state else st.image(imagem_encontrada, width=160)
+
+# Carrega imagem para animação rápida se disponível
+if imagem_encontrada and "img_base64" not in st.session_state:
+    import base64
+    with open(imagem_encontrada, "rb") as f:
+        st.session_state.img_base64 = base64.b64encode(f.read()).decode()
+
+# Exibe o mascote normal nas telas padrão
+if st.session_state.passo != 6:
+    mostrar_mascote(animado=False)
 
 # -----------------------------------------------------------------------------
-# 4. Tela de Alerta de Crise
+# 4. Alerta de Crise
 # -----------------------------------------------------------------------------
 if st.session_state.crise:
     st.error("🚨 **ATENÇÃO E APOIO IMEDIATO**")
-    st.write(
-        "Percebi que você está passando por um momento muito difícil. "
-        "Você não está sozinho(a)! Por favor, procure **AGORA** mesmo um professor, "
-        "o psicólogo da escola ou a coordenação. Nós queremos te ajudar!"
-    )
+    st.write("Percebi que você está passando por um momento muito difícil. Você não está sozinho(a)! Por favor, procure **AGORA** mesmo um professor, a coordenação ou a psicologia da escola.")
     if st.button("Reiniciar Atendimento"):
         st.session_state.crise = False
         st.session_state.passo = 0
-        st.session_state.nome = ""
         st.rerun()
     st.stop()
 
 # -----------------------------------------------------------------------------
-# 5. Fluxo Passo a Passo
+# 5. JORNADA DE 10 PASSAGENS INTERATIVAS
 # -----------------------------------------------------------------------------
 
-# PASSO 0: BOAS-VINDAS E IDENTIFICAÇÃO
+# ETAPA 1: BOAS-VINDAS E NOME
 if st.session_state.passo == 0:
-    st.subheader("👋 Boas-vindas ao seu espaço seguro!")
-    st.write("Olá! Eu sou o **AcolheTech**, o seu assistente virtual de bem-estar e escuta empática.")
+    st.subheader("👋 Etapa 1/10: Boas-vindas ao seu espaço seguro!")
+    st.write("Olá! Eu sou o **AcolheTech**. Estou aqui para conversar, te ouvir e te ajudar a organizar seus pensamentos hoje.")
     
-    nome_input = st.text_input("Como você prefere ser chamado(a)?", key="input_nome_usuario")
-    
-    if st.button("Iniciar Conversa"):
+    nome_input = st.text_input("Como prefere ser chamado(a)?")
+    if st.button("Iniciar Atendimento"):
         if verificar_seguranca(nome_input):
-            st.session_state.crise = True
-            st.rerun()
-        elif nome_input.strip() != "":
+            st.session_state.crise = True; st.rerun()
+        elif nome_input.strip():
             st.session_state.nome = nome_input
-            st.session_state.passo = 1
-            st.rerun()
-        else:
-            st.warning("Por favor, digite o seu nome para podermos começar!")
+            st.session_state.passo = 1; st.rerun()
 
-# PASSAGEM 1: SONDAGEM EMOCIONAL
+# ETAPA 2: AVALIAÇÃO DE ENERGIA/HUMOR
 elif st.session_state.passo == 1:
-    st.info(f"Prazer em te conhecer, **{st.session_state.nome}**! Este é o seu espaço seguro para conversar sem julgamentos.")
-    st.write("### Passagem 1 de 5: Como está o seu dia?")
-    st.write("Qual destas situações está mais presente no seu dia de hoje?")
+    st.write(f"### Etapa 2/10: Checagem de Bateria Emocional")
+    st.write(f"Como está sua bateria para enfrentar as atividades de hoje, **{st.session_state.nome}**?")
     
     col1, col2 = st.columns(2)
-    if col1.button("1 - Conflito na escola"):
-        st.session_state.opcao1 = "1"; st.session_state.passo = 2; st.rerun()
-    if col2.button("2 - Ansiedade ou preocupação"):
-        st.session_state.opcao1 = "2"; st.session_state.passo = 2; st.rerun()
-    if col1.button("3 - Sobrecarga com estudos"):
-        st.session_state.opcao1 = "3"; st.session_state.passo = 2; st.rerun()
-    if col2.button("4 - Tristeza ou solidão"):
-        st.session_state.opcao1 = "4"; st.session_state.passo = 2; st.rerun()
+    if col1.button("🔋 100% - Cheio(a) de energia"): st.session_state.passo = 2; st.rerun()
+    if col2.button("⚡ 50% - Cansado(a), mas levando"): st.session_state.passo = 2; st.rerun()
+    if col1.button("🪫 20% - Perto de esgotar"): st.session_state.passo = 2; st.rerun()
+    if col2.button("⚠️ 0% - Totalmente sobrecarregado(a)"): st.session_state.passo = 2; st.rerun()
 
-# PASSAGEM 2: APROFUNDAMENTO DO PROBLEMA
+# ETAPA 3: CHECKLIST DE SINTOMAS CORPO/MENTE
 elif st.session_state.passo == 2:
-    st.write("### Passagem 2 de 5: Entendendo o desafio")
+    st.write("### Etapa 3/10: Checklist de Sensações")
+    st.write("Marque o que você tem sentido no corpo ou na mente no dia de hoje (pode marcar mais de um):")
     
-    if st.session_state.opcao1 == "1":
-        st.write("Conflitos desgastam muito o nosso dia. O que melhor descreve o que aconteceu?")
-        if st.button("Mal-entendimento ou fofoca"): st.session_state.opcao2 = "fofoca"; st.session_state.passo = 3; st.rerun()
-        if st.button("Exclusão num trabalho em grupo"): st.session_state.opcao2 = "exclusao"; st.session_state.passo = 3; st.rerun()
-        if st.button("Discussão impulsiva"): st.session_state.opcao2 = "discussao"; st.session_state.passo = 3; st.rerun()
-        
-    elif st.session_state.opcao1 == "2":
-        st.write("A ansiedade faz a mente dar voltas. O que está pesando mais?")
-        if st.button("Medo do julgamento dos outros"): st.session_state.opcao2 = "julgamento"; st.session_state.passo = 3; st.rerun()
-        if st.button("Insegurança com o futuro/notas"): st.session_state.opcao2 = "futuro"; st.session_state.passo = 3; st.rerun()
-        if st.button("Sensação de agitação no corpo"): st.session_state.opcao2 = "corpo"; st.session_state.passo = 3; st.rerun()
+    s1 = st.checkbox("Coração acelerado ou aperto no peito")
+    s2 = st.checkbox("Músculos tensos (ombros/pescoço rígidos)")
+    s3 = st.checkbox("Pensamentos repetitivos ou difíceis de desligar")
+    s4 = st.checkbox("Cansaço excessivo ou vontade de isolar-se")
+    s5 = st.checkbox("Irritabilidade ou paciência curta")
+    
+    if st.button("Confirmar Checklist"):
+        st.session_state.sintomas = [s1, s2, s3, s4, s5]
+        st.session_state.passo = 3; st.rerun()
 
-    elif st.session_state.opcao1 == "3":
-        st.write("A rotina de estudos pode ser pesada. Qual o maior obstáculo hoje?")
-        if st.button("Muitas tarefas acumuladas"): st.session_state.opcao2 = "tarefas"; st.session_state.passo = 3; st.rerun()
-        if st.button("Medo de ir mal numa prova"): st.session_state.opcao2 = "prova"; st.session_state.passo = 3; st.rerun()
-        if st.button("Dificuldade de concentração"): st.session_state.opcao2 = "foco"; st.session_state.passo = 3; st.rerun()
-
-    else:
-        st.write("Sinto muito que esteja se sentindo assim. O que reflete melhor o momento?")
-        if st.button("Problemas em casa"): st.session_state.opcao2 = "casa"; st.session_state.passo = 3; st.rerun()
-        if st.button("Sensação de não pertencer"): st.session_state.opcao2 = "isolamento"; st.session_state.passo = 3; st.rerun()
-        if st.button("Cansaço emocional geral"): st.session_state.opcao2 = "tristeza"; st.session_state.passo = 3; st.rerun()
-
-# PASSAGEM 3: PRÁTICA DE REGULAÇÃO
+# ETAPA 4: IDENTIFICAÇÃO DA ORIGEM
 elif st.session_state.passo == 3:
-    st.write("### Passagem 3 de 5: Pausa para autorregulação")
-    st.write("Escolha uma atividade para acalmar a mente:")
-    
-    opcao3 = st.radio("Selecione uma opção:", [
-        "1 - Respiração Guiada (5 Ciclos Profundos)", 
-        "2 - Técnica de Aterramento (Foco no Presente)", 
-        "3 - Espaço Livre para Desabafo Escrito"
-    ])
+    st.write("### Etapa 4/10: Qual a principal fonte dessa tensão?")
+    col1, col2 = st.columns(2)
+    if col1.button("📚 Desafios Acadêmicos / Provas"): st.session_state.passo = 4; st.rerun()
+    if col2.button("🤝 Relações com Colegas / Amigos"): st.session_state.passo = 4; st.rerun()
+    if col1.button("🏠 Questões Familiares ou Pessoais"): st.session_state.passo = 4; st.rerun()
+    if col2.button("❓ Não sei explicar, apenas sinto"): st.session_state.passo = 4; st.rerun()
 
-    if st.button("Realizar Atividade"):
-        container = st.empty()
-        
-        if "1 -" in opcao3:
-            bar = st.progress(0)
-            for c in range(1, 6):
-                container.info(f"🧘 **Ciclo {c}/5:** INSPIRA devagar pelo nariz...")
-                bar.progress(int((c - 0.6) * 20))
-                time.sleep(2)
-                
-                container.warning(f"🧘 **Ciclo {c}/5:** SEGURA O AR...")
-                time.sleep(1.5)
-                
-                container.success(f"🧘 **Ciclo {c}/5:** EXPIRA devagar pela boca...")
-                bar.progress(c * 20)
-                time.sleep(2)
-                
-            container.success("✨ **Excelente! O ritmo cardíaco e a tensão diminuíram.**")
-            time.sleep(2)
-            
-        elif "2 -" in opcao3:
-            container.info("👁️ **Olhe ao redor e identifique 3 objetos de cor azul...**")
-            time.sleep(3)
-            container.warning("👂 **Agora preste atenção em 2 sons ao fundo no ambiente...**")
-            time.sleep(3)
-            container.success("✨ **Perfeito! Seu cérebro voltou para o momento presente.**")
-            time.sleep(2)
-            
-        else:
-            desabafo = st.text_area("Escreva aqui o que está pesando no seu coração:")
-            if desabafo:
-                if verificar_seguranca(desabafo):
-                    st.session_state.crise = True
-                    st.rerun()
-                else:
-                    st.success("Colocar os pensamentos no papel tira o peso da mente!")
-                    time.sleep(2)
-
-        st.session_state.passo = 4
-        st.rerun()
-
-# PASSAGEM 4: ORIENTAÇÃO SOCIOEMOCIONAL
+# ETAPA 5: SONDAGEM DE PENSAMENTOS AUTOMÁTICOS
 elif st.session_state.passo == 4:
-    st.write("### Passagem 4 de 5: Orientação do AcolheTech")
-    st.info("💡 **DICA DE BEM-ESTAR:**")
-    
-    if st.session_state.opcao1 == "1":
-        st.write("Não tente resolver conflitos no calor do momento. Espere a poeira baixar e expresse os seus sentimentos de forma calma.")
-    elif st.session_state.opcao1 == "2":
-        st.write("Pensamentos de ansiedade não são fatos reais! Lembre-se de todas as vezes em que você superou dias difíceis.")
-    elif st.session_state.opcao1 == "3":
-        st.write("Divida tarefas grandes em blocos de 15 minutos. Um passo de cada vez já é um grande avanço!")
-    else:
-        st.write("Seja gentil consigo mesmo(a). Trate as suas emoções com a mesma paciência com que trataria um grande amigo.")
+    st.write("### Etapa 5/10: Identificando Pensamentos")
+    st.write("Qual destas frases mais se aproxima do seu pensamento atual?")
+    if st.button("'Tenho medo de não dar conta de tudo.'"): st.session_state.passo = 5; st.rerun()
+    if st.button("'Sinto que os outros esperam demais de mim.'"): st.session_state.passo = 5; st.rerun()
+    if st.button("'Acho que ninguém entende o que estou passando.'"): st.session_state.passo = 5; st.rerun()
+    if st.button("'Preciso de um tempo para respirar e reorganizar a mente.'"): st.session_state.passo = 5; st.rerun()
 
-    if st.button("Avançar para a verificação final"):
-        st.session_state.passo = 5
-        st.rerun()
-
-# PASSAGEM 5: AVALIAÇÃO E ENCERRAMENTO
+# ETAPA 6: TEMPO PARA REFLETIR E PAUSA
 elif st.session_state.passo == 5:
-    st.write("### Passagem 5 de 5: Como você se sente agora?")
-    st.write(f"**{st.session_state.nome}**, passamos por várias etapas juntos.")
+    st.write("### Etapa 6/10: Tempo para Refletir ⏳")
+    st.write("Vamos fazer uma pausa consciente de 10 segundos antes de ir para o exercício prático.")
     
-    nota = st.slider("De 1 a 5, quanto esta conversa te ajudou a aliviar a tensão?", 1, 5, 5)
+    if st.button("Iniciar Temporizador de Reflexão (10s)"):
+        relogio = st.empty()
+        for t in range(10, 0, -1):
+            relogio.subheader(f"⏱️ Refletindo... {t} segundos")
+            time.sleep(1)
+        relogio.success("✨ Tempo concluído! Mente pronta para a próxima etapa.")
+        time.sleep(1)
+        st.session_state.passo = 6; st.rerun()
+
+# ETAPA 7: EXERCÍCIO DE RESPIRAÇÃO COM MASCOTE ANIMADO
+elif st.session_state.passo == 6:
+    st.write("### Etapa 7/10: Respiração Guiada (5 Ciclos)")
+    st.write("Observe o **AcolheTech** abaixo: ele vai crescer quando você deve **INSPIRAR** e encolher quando deve **EXPIRAR**.")
     
-    if st.button("Finalizar Acolhimento"):
-        st.success("💙 **OBRIGADO POR USAR O ACOLHETECH!**")
+    if st.button("Começar Exercício de Respiração"):
+        container_msg = st.empty()
+        bar = st.progress(0)
+        
+        for c in range(1, 6):
+            # Exibe robô crescendo
+            mostrar_mascote(animado=True)
+            container_msg.info(f"🧘 **Ciclo {c}/5:** INSPIRA devagar... (O robô está expandindo)")
+            bar.progress(int((c - 0.5) * 20))
+            time.sleep(2.5)
+            
+            container_msg.warning(f"🧘 **Ciclo {c}/5:** SEGURA O AR...")
+            time.sleep(1.5)
+            
+            container_msg.success(f"🧘 **Ciclo {c}/5:** EXPIRA suavemente... (O robô está encolhendo)")
+            bar.progress(c * 20)
+            time.sleep(2.5)
+            
+        container_msg.success("✨ Excelente! O exercício reduziu seu nível de estresse.")
+        time.sleep(2)
+        st.session_state.passo = 7; st.rerun()
+
+# ETAPA 8: DICA SOCIOEMOCIONAL PERSONALIZADA
+elif st.session_state.passo == 7:
+    st.write("### Etapa 8/10: Orientação do AcolheTech")
+    st.info("💡 **RECURSO PSICOEDUCACIONAL:**")
+    st.write("Quando a pressão parecer grande demais, aplique a **Regra dos 5 Minutos**: Foque em realizar apenas uma pequena parte da tarefa por 5 minutos sem se preocupar com o todo.")
+    
+    if st.button("Avançar para o Plano de Ação"):
+        st.session_state.passo = 8; st.rerun()
+
+# ETAPA 9: PLANO DE AÇÃO INDIVIDUAL (CHECKLIST)
+elif st.session_state.passo == 8:
+    st.write("### Etapa 9/10: Seu Compromisso de Bem-Estar")
+    st.write("Escolha pelo menos 2 ações práticas que você vai fazer hoje por você:")
+    
+    st.checkbox("Beber um copo de água e caminhar um pouco")
+    st.checkbox("Conversar com um amigo ou professor de confiança")
+    st.checkbox("Anotar tarefas num papel para tirar o peso da cabeça")
+    st.checkbox("Tirar 15 minutos para ouvir uma música relaxante sem celular")
+    
+    if st.button("Concluir Plano de Ação"):
+        st.session_state.passo = 9; st.rerun()
+
+# ETAPA 10: AVALIAÇÃO E ENCERRAMENTO
+elif st.session_state.passo == 9:
+    st.write("### Etapa 10/10: Avaliação do Acolhimento")
+    st.write(f"**{st.session_state.nome}**, completamos nossa jornada de 10 etapas!")
+    
+    nota = st.slider("De 1 a 5, quanto esse momento te ajudou a desacelerar?", 1, 5, 5)
+    
+    if st.button("Finalizar e Enviar Avaliação"):
+        st.success("💙 **ATENDIMENTO CONCLUÍDO COM SUCESSO!**")
         st.balloons()
         st.write("---")
-        st.warning(
-            "**LEMBRE-SE:** O AcolheTech é uma ferramenta de apoio inicial e **NÃO substitui** "
-            "o acompanhamento de profissionais de psicologia ou psiquiatria. "
-            "Sempre que precisar, procure a coordenação, os seus professores ou a psicologia da escola!"
-        )
-        if st.button("Novo Atendimento"):
+        st.warning("⚠️ **AVISO IMPORTANTE:** O AcolheTech é um assistente de autorregulação e **não substitui** profissionais de psicologia. Se precisar de apoio contínuo, procure a equipe de orientação da escola.")
+        if st.button("Reiniciar Atendimento"):
             st.session_state.passo = 0
             st.session_state.nome = ""
             st.rerun()
