@@ -1,6 +1,7 @@
 import streamlit as st
 import time
 import os
+import base64
 
 # -----------------------------------------------------------------------------
 # 1. Configuração da Página e Animações CSS (Dark Mode & Animação do Mascote)
@@ -60,15 +61,15 @@ st.markdown("""
         100% { transform: scale(0.85); }
     }
     
-    .robo-estatico {
+    .robo-estatico img {
         animation: flutuar 3s ease-in-out infinite;
         display: block;
         margin-left: auto;
         margin-right: auto;
     }
     
-    .robo-respirando {
-        animation: respirarMascote 5s ease-in-out infinite;
+    .robo-respirando img {
+        animation: respirarMascote 4s ease-in-out infinite;
         display: block;
         margin-left: auto;
         margin-right: auto;
@@ -95,13 +96,17 @@ def verificar_seguranca(texto):
     return False
 
 # -----------------------------------------------------------------------------
-# 3. Exibição do Mascote (Normal vs Animado)
+# 3. Exibição do Mascote (Corrigida sem vazar texto/código)
 # -----------------------------------------------------------------------------
 st.title("💙 AcolheTech")
 st.caption("Do algoritmo ao acolhimento • Assistente de Bem-Estar Escolar")
 
-nomes_possiveis_imagem = ["acolhetech robo.png", "acolhetech_robo.png", "acolhetech robo.jpg", "mascote.png", "robo.png"]
+nomes_possiveis_imagem = [
+    "acolhetech robo.png", "acolhetech_robo.png", "acolhetech robo.jpg",
+    "acolhetech_robo.jpg", "mascote.png", "robo.png"
+]
 imagem_encontrada = None
+
 for nome_file in nomes_possiveis_imagem:
     if os.path.exists(nome_file):
         imagem_encontrada = nome_file
@@ -109,16 +114,28 @@ for nome_file in nomes_possiveis_imagem:
 
 def mostrar_mascote(animado=False):
     if imagem_encontrada:
-        classe = "robo-respirando" if animado else "robo-estatico"
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            st.markdown(f'<img src="data:image/png;base64,{st.session_state.get("img_base64", "")}" class="{classe}" width="160">', unsafe_allow_html=True) if "img_base64" in st.session_state else st.image(imagem_encontrada, width=160)
-
-# Carrega imagem para animação rápida se disponível
-if imagem_encontrada and "img_base64" not in st.session_state:
-    import base64
-    with open(imagem_encontrada, "rb") as f:
-        st.session_state.img_base64 = base64.b64encode(f.read()).decode()
+            if animado:
+                try:
+                    with open(imagem_encontrada, "rb") as f:
+                        data = base64.b64encode(f.read()).decode()
+                    st.markdown(
+                        f'<div class="robo-respirando"><img src="data:image/png;base64,{data}" width="160"></div>',
+                        unsafe_allow_html=True
+                    )
+                except:
+                    st.image(imagem_encontrada, width=160)
+            else:
+                try:
+                    with open(imagem_encontrada, "rb") as f:
+                        data = base64.b64encode(f.read()).decode()
+                    st.markdown(
+                        f'<div class="robo-estatico"><img src="data:image/png;base64,{data}" width="160"></div>',
+                        unsafe_allow_html=True
+                    )
+                except:
+                    st.image(imagem_encontrada, width=160)
 
 # Exibe o mascote normal nas telas padrão
 if st.session_state.passo != 6:
@@ -214,23 +231,23 @@ elif st.session_state.passo == 5:
 # ETAPA 7: EXERCÍCIO DE RESPIRAÇÃO COM MASCOTE ANIMADO
 elif st.session_state.passo == 6:
     st.write("### Etapa 7/10: Respiração Guiada (5 Ciclos)")
-    st.write("Observe o **AcolheTech** abaixo: ele vai crescer quando você deve **INSPIRAR** e encolher quando deve **EXPIRAR**.")
+    st.write("Observe o **AcolheTech** abaixo: ele encolhe e expande no ritmo da respiração.")
+    
+    mostrar_mascote(animado=True)
     
     if st.button("Começar Exercício de Respiração"):
         container_msg = st.empty()
         bar = st.progress(0)
         
         for c in range(1, 6):
-            # Exibe robô crescendo
-            mostrar_mascote(animado=True)
-            container_msg.info(f"🧘 **Ciclo {c}/5:** INSPIRA devagar... (O robô está expandindo)")
+            container_msg.info(f"🧘 **Ciclo {c}/5:** INSPIRA devagar pelo nariz...")
             bar.progress(int((c - 0.5) * 20))
             time.sleep(2.5)
             
             container_msg.warning(f"🧘 **Ciclo {c}/5:** SEGURA O AR...")
             time.sleep(1.5)
             
-            container_msg.success(f"🧘 **Ciclo {c}/5:** EXPIRA suavemente... (O robô está encolhendo)")
+            container_msg.success(f"🧘 **Ciclo {c}/5:** EXPIRA suavemente pela boca...")
             bar.progress(c * 20)
             time.sleep(2.5)
             
