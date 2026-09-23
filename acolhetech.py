@@ -4,7 +4,7 @@ import os
 import base64
 
 # -----------------------------------------------------------------------------
-# 1. Configuração da Página e Animações CSS (Dark Mode & Animação do Mascote)
+# 1. Configuração da Página e Estilo CSS (Tom Azul Noite Acolhedor)
 # -----------------------------------------------------------------------------
 st.set_page_config(
     page_title="AcolheTech - Assistente de Bem-Estar",
@@ -12,43 +12,46 @@ st.set_page_config(
     layout="centered"
 )
 
-# Estilização CSS incluindo Animação do Mascote
+# Estilização CSS: Fundo Azul Noite Profundo (#0D1B2A)
 st.markdown("""
     <style>
-    /* Força o fundo escuro */
+    /* Força o fundo para Azul Noite Acolhedor */
     .stApp, [data-testid="stAppViewContainer"] {
-        background-color: #121824 !important;
+        background-color: #0D1B2A !important;
     }
     
-    /* Textos claros */
+    /* Textos em tom suave de branco/azul claro */
     html, body, p, span, div, label, h1, h2, h3, h4, h5, h6, .stMarkdown {
-        color: #f0f4f8 !important;
+        color: #E0E1DD !important;
     }
     
-    /* Botões interativos */
+    /* Botões em tom Azul Turquesa / Marinho */
     .stButton>button {
         width: 100% !important;
-        border-radius: 10px !important;
+        border-radius: 12px !important;
         height: 3.2em !important;
-        background-color: #1f618d !important;
-        color: #ffffff !important;
+        background-color: #1B263B !important;
+        color: #E0E1DD !important;
         font-weight: bold !important;
         font-size: 1rem !important;
-        border: 1px solid #2980b9 !important;
+        border: 1px solid #415A77 !important;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     }
     .stButton>button:hover {
-        background-color: #2980b9 !important;
-        border-color: #5dade2 !important;
+        background-color: #415A77 !important;
+        border-color: #778DA9 !important;
+        color: #ffffff !important;
     }
     
     /* Inputs e Caixas */
     .stTextInput input, .stTextArea textarea {
         color: #ffffff !important;
-        background-color: #1c2434 !important;
-        border: 1px solid #34495e !important;
+        background-color: #1B263B !important;
+        border: 1px solid #415A77 !important;
+        border-radius: 8px !important;
     }
     
-    /* ANIMAÇÕES DO MASCOTE DO ROBOZINHO */
+    /* ANIMAÇÕES DO MASCOTE */
     @keyframes flutuar {
         0% { transform: translateY(0px); }
         50% { transform: translateY(-8px); }
@@ -56,13 +59,13 @@ st.markdown("""
     }
     
     @keyframes respirarMascote {
-        0% { transform: scale(0.85); }
-        50% { transform: scale(1.15); }
-        100% { transform: scale(0.85); }
+        0% { transform: scale(0.88); }
+        50% { transform: scale(1.12); }
+        100% { transform: scale(0.88); }
     }
     
     .robo-estatico img {
-        animation: flutuar 3s ease-in-out infinite;
+        animation: flutuar 3.5s ease-in-out infinite;
         display: block;
         margin-left: auto;
         margin-right: auto;
@@ -83,7 +86,6 @@ st.markdown("""
 if "passo" not in st.session_state: st.session_state.passo = 0
 if "nome" not in st.session_state: st.session_state.nome = ""
 if "sintomas" not in st.session_state: st.session_state.sintomas = []
-if "gatilhos" not in st.session_state: st.session_state.gatilhos = []
 if "crise" not in st.session_state: st.session_state.crise = False
 
 palavras_alerta = ["machucar", "desistir", "morrer", "socorro", "suicidio", "corta", "bater", "panico"]
@@ -96,11 +98,23 @@ def verificar_seguranca(texto):
     return False
 
 # -----------------------------------------------------------------------------
-# 3. Exibição do Mascote (Corrigida sem vazar texto/código)
+# 3. Cabeçalho, Música de Fundo e Mascote
 # -----------------------------------------------------------------------------
 st.title("💙 AcolheTech")
 st.caption("Do algoritmo ao acolhimento • Assistente de Bem-Estar Escolar")
 
+# --- SELETOR DE MÚSICA DE FUNDO RELAXANTE ---
+with st.expander("🎵 Fundo Musical de Relaxamento (Opcional)"):
+    musica = st.selectbox(
+        "Escolha uma trilha para acompanhar seu acolhimento:",
+        ["Sem Músicas", "Sons Suaves da Natureza / Chuva", "Piano Relaxante"]
+    )
+    if musica == "Sons Suaves da Natureza / Chuva":
+        st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", format="audio/mp3")
+    elif musica == "Piano Relaxante":
+        st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", format="audio/mp3")
+
+# Busca pela imagem do robô
 nomes_possiveis_imagem = [
     "acolhetech robo.png", "acolhetech_robo.png", "acolhetech robo.jpg",
     "acolhetech_robo.jpg", "mascote.png", "robo.png"
@@ -116,26 +130,16 @@ def mostrar_mascote(animado=False):
     if imagem_encontrada:
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            if animado:
-                try:
-                    with open(imagem_encontrada, "rb") as f:
-                        data = base64.b64encode(f.read()).decode()
-                    st.markdown(
-                        f'<div class="robo-respirando"><img src="data:image/png;base64,{data}" width="160"></div>',
-                        unsafe_allow_html=True
-                    )
-                except:
-                    st.image(imagem_encontrada, width=160)
-            else:
-                try:
-                    with open(imagem_encontrada, "rb") as f:
-                        data = base64.b64encode(f.read()).decode()
-                    st.markdown(
-                        f'<div class="robo-estatico"><img src="data:image/png;base64,{data}" width="160"></div>',
-                        unsafe_allow_html=True
-                    )
-                except:
-                    st.image(imagem_encontrada, width=160)
+            classe_div = "robo-respirando" if animado else "robo-estatico"
+            try:
+                with open(imagem_encontrada, "rb") as f:
+                    data = base64.b64encode(f.read()).decode()
+                st.markdown(
+                    f'<div class="{classe_div}"><img src="data:image/png;base64,{data}" width="160"></div>',
+                    unsafe_allow_html=True
+                )
+            except:
+                st.image(imagem_encontrada, width=160)
 
 # Exibe o mascote normal nas telas padrão
 if st.session_state.passo != 6:
@@ -172,7 +176,7 @@ if st.session_state.passo == 0:
 
 # ETAPA 2: AVALIAÇÃO DE ENERGIA/HUMOR
 elif st.session_state.passo == 1:
-    st.write(f"### Etapa 2/10: Checagem de Bateria Emocional")
+    st.write("### Etapa 2/10: Checagem de Bateria Emocional")
     st.write(f"Como está sua bateria para enfrentar as atividades de hoje, **{st.session_state.nome}**?")
     
     col1, col2 = st.columns(2)
