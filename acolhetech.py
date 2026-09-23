@@ -86,7 +86,7 @@ st.markdown(
 
 
 # -----------------------------------------------------------------------------
-# 2. Função de Limpeza para Reiniciar o Atendimento
+# 2. Função de Limpeza para Reiniciar o Atendimento do Zero
 # -----------------------------------------------------------------------------
 def reiniciar_atendimento():
   for key in list(st.session_state.keys()):
@@ -139,8 +139,10 @@ frases_positivas = [
 ]
 
 # -----------------------------------------------------------------------------
-# 3. PLAYER DE MÚSICA LOCAL
+# 3. SELETOR E PLAYER DE MÚSICA ONLINE (MÚSICA ANTERIOR)
 # -----------------------------------------------------------------------------
+url_piano_original = "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=meditation-piano-112191.mp3"
+
 with st.expander("🎵 Trilha Sonora de Acolhimento"):
   opcao_musica = st.radio(
       "Fundo Musical de Relaxamento:",
@@ -149,20 +151,7 @@ with st.expander("🎵 Trilha Sonora de Acolhimento"):
   )
 
 if opcao_musica == "🎹 Piano Calmo e Suave":
-  ficheiro_audio = "musica.mp3"
-  if os.path.exists(ficheiro_audio):
-    try:
-      with open(ficheiro_audio, "rb") as f:
-        audio_bytes = f.read()
-      st.audio(audio_bytes, format="audio/mp3", loop=True)
-    except Exception:
-      st.info("Carregando reprodução de áudio...")
-  else:
-    # Caso o ficheiro local ainda não tenha sido adicionado ao GitHub
-    st.info(
-      "💡 Para ouvir a música de fundo, adicione o ficheiro 'musica.mp3' no seu"
-      " repositório do GitHub."
-    )
+  st.audio(url_piano_original, format="audio/mp3", loop=True)
 
 # -----------------------------------------------------------------------------
 # 4. Cabeçalho e Mascote
