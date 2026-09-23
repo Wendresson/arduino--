@@ -1,27 +1,141 @@
 import streamlit as st
 import time
 
-st.set_page_config(page_title="AcolheTech", page_icon="💙")
+# Configuração da página e visual
+st.set_page_config(page_title="AcolheTech", page_icon="💙", layout="centered")
 
-st.title("💙 AcolheTech - Seu Espaço Seguro")
-st.write("Assistente de bem-estar e acolhimento escolar.")
+# Estilo personalizado em CSS
+st.markdown("""
+    <style>
+    .main { background-color: #f4f7f6; }
+    .stChatMessage { border-radius: 12px; }
+    </style>
+""", unsafe_allow_html=True)
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+st.title("💙 AcolheTech")
+st.caption("Do algoritmo ao acolhimento • Assistente de Bem-Estar Escolar")
 
-# Exibe histórico de mensagens
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+palavras_alerta = ["machucar", "desistir", "morrer", "socorro", "suicidio", "corta", "bater", "panico"]
 
-# Entrada do usuário
-if prompt := st.chat_input("Como posso te ajudar hoje?"):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+def verificar_seguranca(texto):
+    texto_lc = texto.lower()
+    for palavra in palavras_alerta:
+        if palavra in texto_lc:
+            return True
+    return False
 
-    # Resposta do Robô
-    response = f"Olá! Recebi sua mensagem. Vamos conversar sobre como você está se sentindo."
+# Inicialização da sessão
+if "passo" not in st.session_state:
+    st.session_state.passo = 0
+    st.session_state.nome = ""
+    st.session_state.opcao1 = ""
+    st.session_state.historico = []
+
+# Função para adicionar mensagens
+def responder(texto_robo):
+    st.session_state.historico.append({"role": "assistant", "content": texto_robo})
+
+# Exibição das mensagens anteriores
+for msg in st.session_state.historico:
+    with st.chat_message(msg["role"]):
+        st.write(msg["content"])
+
+# Passo 0: Boas-vindas e Nome
+if st.session_state.passo == 0:
     with st.chat_message("assistant"):
-        st.markdown(response)
-    st.session_state.messages.append({"role": "assistant", "content": response})
+        st.write("Olá! Eu sou o **AcolheTech**, seu assistente de bem-estar. Como você prefere ser chamado(a)?")
+    
+    nome_input = st.chat_input("Digite seu nome aqui...")
+    if nome_input:
+        if verificar_seguranca(nome_input):
+            st.error("🚨 Percebi que você está passando por um momento difícil. Por favor, procure AGORA mesmo a coordenação ou a psicologia da escola!")
+        else:
+            st.session_state.nome = nome_input
+            st.session_state.historico.append({"role": "user", "content": nome_input})
+            responder(f"Prazer em te conhecer, **{nome_input}**! Este é o seu espaço seguro para conversar sem julgamentos.")
+            st.session_state.passo = 1
+            st.rerun()
+
+# Passo 1: Sondagem Emocional
+elif st.session_state.passo == 1:
+    with st.chat_message("assistant"):
+        st.write(f"**{st.session_state.nome}**, qual destas situações está mais presente no seu dia de hoje?")
+        col1, col2 = st.columns(2)
+        if col1.button("1. Conflito ou desentendimento na escola"):
+            st.session_state.opcao1 = "1"
+            st.session_state.passo = 2
+            st.rerun()
+        if col2.button("2. Ansiedade ou preocupação"):
+            st.session_state.opcao1 = "2"
+            st.session_state.passo = 2
+            st.rerun()
+        if col1.button("3. Sobrecarga com provas e estudos"):
+            st.session_state.opcao1 = "3"
+            st.session_state.passo = 2
+            st.rerun()
+        if col2.button("4. Tristeza ou sensação de solidão"):
+            st.session_state.opcao1 = "4"
+            st.session_state.passo = 2
+            st.rerun()
+
+# Passo 2: Aprofundamento do Desafio
+elif st.session_state.passo == 2:
+    with st.chat_message("assistant"):
+        if st.session_state.opcao1 == "1":
+            st.write("Entendo. Conflitos desgastam muito a gente. O que melhor descreve?")
+            if st.button("Mal-entendido / Fofoca"): st.session_state.passo = 3; st.rerun()
+            if st.button("Exclusão em grupo"): st.session_state.passo = 3; st.rerun()
+            if st.button("Discussão impulsiva"): st.session_state.passo = 3; st.rerun()
+        elif st.session_state.opcao1 == "2":
+            st.write("A ansiedade faz o coração acelerar. O que está pesando mais?")
+            if st.button("Medo do julgamento dos outros"): st.session_state.passo = 3; st.rerun()
+            if st.button("Insegurança com o futuro/notas"): st.session_state.passo = 3; st.rerun()
+            if st.button("Agitação no corpo sem motivo"): st.session_state.passo = 3; st.rerun()
+        elif st.session_state.opcao1 == "3":
+            st.write("A rotina de estudos é pesada. Qual o maior obstáculo hoje?")
+            if st.button("Muitas tarefas acumuladas"): st.session_state.passo = 3; st.rerun()
+            if st.button("Medo de ir mal na prova"): st.session_state.passo = 3; st.rerun()
+            if st.button("Dificuldade de concentração"): st.session_state.passo = 3; st.rerun()
+        else:
+            st.write("Sinto muito que esteja se sentindo assim. O que reflete o momento?")
+            if st.button("Problemas em casa"): st.session_state.passo = 3; st.rerun()
+            if st.button("Sensação de não pertencer"): st.session_state.passo = 3; st.rerun()
+            if st.button("Cansaço emocional geral"): st.session_state.passo = 3; st.rerun()
+
+# Passo 3: Exercício Prático
+elif st.session_state.passo == 3:
+    with st.chat_message("assistant"):
+        st.write("Antes de continuarmos, vamos acalmar a mente com um exercício rápido.")
+        if st.button("🧘‍♂️ Fazer Exercício de Respiração Guiada (5 ciclos)"):
+            st.session_state.passo = 4
+            st.rerun()
+        if st.button("✍️ Espaço para Desabafo Escrito"):
+            st.session_state.passo = 4
+            st.rerun()
+
+# Passo 4: Dica Socioemocional
+elif st.session_state.passo == 4:
+    with st.chat_message("assistant"):
+        st.info("💡 **DICA ACOLHETECH:** Seja gentil com você hoje. Quando a pressão aumentar, divida seus problemas em pequenos passos e lembre-se de que você não precisa carregar tudo sozinho(a).")
+        if st.button("Avançar para avaliação"):
+            st.session_state.passo = 5
+            st.rerun()
+
+# Passo 5: Feedback de 1 a 5
+elif st.session_state.passo == 5:
+    with st.chat_message("assistant"):
+        st.write(f"**{st.session_state.nome}**, de 1 a 5, quanto nosso momento de conversa te ajudou hoje?")
+        nota = st.slider("Escolha a nota:", 1, 5, 5)
+        if st.button("Enviar Avaliação"):
+            st.session_state.passo = 6
+            st.rerun()
+
+# Encerramento
+elif st.session_state.passo == 6:
+    st.success("💙 **OBRIGADO POR USAR O ACOLHETECH!**")
+    st.write("Sua saúde mental importa. Lembre-se: este sistema é um primeiro acolhimento e **não substitui** o acompanhamento de um psicólogo ou psiquiatra.")
+    st.write("Sempre que precisar, procure a coordenação ou a psicologia da escola!")
+    if st.button("Reiniciar Acolhimento"):
+        st.session_state.passo = 0
+        st.session_state.historico = []
+        st.rerun()
