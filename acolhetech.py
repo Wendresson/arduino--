@@ -81,17 +81,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 2. Função para Resetar Toda a Sessão do Zero
+# 2. Função de Limpeza para Reiniciar o Atendimento do Zero
 # -----------------------------------------------------------------------------
-def resetar_sessao():
-    st.session_state.passo = 0
-    st.session_state.nome = ""
-    st.session_state.sintomas = []
-    st.session_state.crise = False
-    # Apaga chaves temporárias criadas pelos widgets
+def reiniciar_atendimento():
     for key in list(st.session_state.keys()):
-        if key not in ["passo", "nome", "sintomas", "crise", "musica_selecionada"]:
-            del st.session_state[key]
+        del st.session_state[key]
 
 # Inicialização limpa das variáveis
 if "passo" not in st.session_state: st.session_state.passo = 0
@@ -109,34 +103,24 @@ def verificar_seguranca(texto):
     return False
 
 # -----------------------------------------------------------------------------
-# 3. SELETOR E PLAYER DE MÚSICAS RELAXANTES
+# 3. SELETOR E PLAYER DE MÚSICA (PIANO OU SEM MÚSICA)
 # -----------------------------------------------------------------------------
-faixas_musica = {
-    "🎹 Piano Calmo e Suave": "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=meditation-piano-112191.mp3",
-    "🌧️ Som Suave de Chuva": "https://cdn.pixabay.com/download/audio/2021/08/09/audio_8347f070cb.mp3?filename=rain-and-paved-road-6875.mp3",
-    "🌊 Ondas do Mar e Relaxamento": "https://cdn.pixabay.com/download/audio/2022/03/10/audio_c3501a3d90.mp3?filename=ocean-waves-112906.mp3",
-    "🧘 Frequência Meditativa (432Hz)": "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=meditation-impromptu-01-110241.mp3",
-    "🔇 Sem Música de Fundo": None
-}
+url_piano = "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=meditation-piano-112191.mp3"
 
-with st.expander("🎵 Escolha sua Trilha Musical Relaxante"):
-    opcao_musica = st.selectbox(
-        "Selecione o som de fundo para te acompanhar:",
-        list(faixas_musica.keys()),
-        key="musica_selecionada"
+with st.expander("🎵 Trilha Sonora de Acolhimento"):
+    opcao_musica = st.radio(
+        "Fundo Musical de Relaxamento:",
+        ["🎹 Piano Calmo e Suave", "🔇 Sem Música de Fundo"],
+        key="radio_musica"
     )
 
-url_audio_atual = faixas_musica[opcao_musica]
-
-if url_audio_atual:
-    # O hash na chave obriga o navegador a recarregar a nova música ao mudar a seleção
-    id_unico = hash(url_audio_atual)
+if opcao_musica == "🎹 Piano Calmo e Suave":
     st.markdown(
         f"""
         <div style="background-color: #1B263B; padding: 10px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #415A77;">
-            <p style="margin: 0 0 5px 0; font-size: 0.85rem; color: #778DA9;">🔊 Tocando agora: <b>{opcao_musica}</b></p>
-            <audio id="audio-{id_unico}" autoplay loop controls style="width: 100%; height: 32px;">
-                <source src="{url_audio_atual}" type="audio/mp3">
+            <p style="margin: 0 0 5px 0; font-size: 0.85rem; color: #778DA9;">🔊 Tocando agora: <b>Piano Suave de Relaxamento</b></p>
+            <audio autoplay loop controls style="width: 100%; height: 32px;">
+                <source src="{url_piano}" type="audio/mp3">
             </audio>
         </div>
         """,
@@ -176,7 +160,7 @@ def mostrar_mascote(animado=False):
             except:
                 st.image(imagem_encontrada, width=160)
 
-# Exibe o mascote estático (nas telas normais)
+# Exibe o mascote estático nas telas padrão
 if st.session_state.passo != 6:
     mostrar_mascote(animado=False)
 
@@ -186,8 +170,7 @@ if st.session_state.passo != 6:
 if st.session_state.crise:
     st.error("🚨 **ATENÇÃO E APOIO IMEDIATO**")
     st.write("Percebi que você está passando por um momento muito difícil. Você não está sozinho(a)! Por favor, procure **AGORA** mesmo um professor, a coordenação ou a psicologia da escola.")
-    if st.button("Reiniciar Atendimento"):
-        resetar_sessao()
+    if st.button("Reiniciar Atendimento", on_click=reiniciar_atendimento):
         st.rerun()
     st.stop()
 
@@ -200,7 +183,7 @@ if st.session_state.passo == 0:
     st.subheader("👋 Etapa 1/10: Boas-vindas ao seu espaço seguro!")
     st.write("Olá! Eu sou o **AcolheTech**. Estou aqui para conversar, te ouvir e te ajudar a organizar seus pensamentos hoje.")
     
-    nome_input = st.text_input("Como prefere ser chamado(a)?", key="nome_input_passo0")
+    nome_input = st.text_input("Como prefere ser chamado(a)?")
     if st.button("Iniciar Atendimento"):
         if verificar_seguranca(nome_input):
             st.session_state.crise = True
@@ -327,10 +310,15 @@ elif st.session_state.passo == 9:
     nota = st.slider("De 1 a 5, quanto esse momento te ajudou a desacelerar?", 1, 5, 5)
     
     if st.button("Finalizar e Enviar Avaliação"):
-        st.success("💙 **ATENDIMENTO CONCLUÍDO COM SUCESSO!**")
-        st.balloons()
-        st.write("---")
-        st.warning("⚠️ **AVISO IMPORTANTE:** O AcolheTech é um assistente de autorregulação e **não substitui** profissionais de psicologia. Se precisar de apoio contínuo, procure a equipe de orientação da escola.")
-        if st.button("Novo Atendimento / Reiniciar"):
-            resetar_sessao()
-            st.rerun()
+        st.session_state.passo = 10
+        st.rerun()
+
+# ETAPA FINAL: MENSAGEM DE AGRADECIMENTO E REINÍCIO
+elif st.session_state.passo == 10:
+    st.success("💙 **ATENDIMENTO CONCLUÍDO COM SUCESSO!**")
+    st.balloons()
+    st.write("---")
+    st.warning("⚠️ **AVISO IMPORTANTE:** O AcolheTech é um assistente de autorregulação e **não substitui** profissionais de psicologia. Se precisar de apoio contínuo, procure a equipe de orientação da escola.")
+    
+    if st.button("🔄 Iniciar Novo Atendimento", on_click=reiniciar_atendimento):
+        st.rerun()
