@@ -98,24 +98,38 @@ def verificar_seguranca(texto):
     return False
 
 # -----------------------------------------------------------------------------
-# 3. MÚSICA DE FUNDO RELAXANTE AUTOMÁTICA
+# 3. SELETOR DE MÚSICA RELAXANTE INTERATIVO (ÁUDIO CUSTOMIZÁVEL)
 # -----------------------------------------------------------------------------
-# URL de áudio instrumental calmo e suave (Piano & Pad ambiente 432Hz)
-url_musica_suave = "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=meditation-piano-112191.mp3"
+# Dicionário com playlists de sons relaxantes de alta qualidade
+opcoes_musica = {
+    "🎹 Piano Suave de Meditação": "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=meditation-piano-112191.mp3",
+    "🌧️ Sons Suaves de Chuva Aconchegante": "https://cdn.pixabay.com/download/audio/2021/09/06/audio_1067d5896a.mp3?filename=rain-and-puddle-106518.mp3",
+    "🌊 Ondas do Mar e Sons da Natureza": "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=ocean-waves-ambient-10903.mp3",
+    "✨ Frequência Meditativa 432Hz (Telas de Relaxamento)": "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a2e12e.mp3?filename=deep-relaxation-ambient-10287.mp3",
+    "🔇 Sem Trilha Sonora": ""
+}
 
-# Injeta o player HTML5 configurado para Autoplay e Loop contínuo
-st.markdown(
-    f"""
-    <div style="background-color: #1B263B; padding: 10px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #415A77;">
-        <p style="margin: 0 0 5px 0; font-size: 0.85rem; color: #778DA9;">🎵 <b>Música de Acolhimento Ativa:</b> Piano Suave de Relaxamento</p>
-        <audio autoplay loop controls style="width: 100%; height: 30px;">
-            <source src="{url_musica_suave}" type="audio/mp3">
-            Seu navegador não suporta áudio.
-        </audio>
-    </div>
-    """,
-    unsafe_allow_html=True
+st.subheader("🎧 Trilha Sonora de Acolhimento")
+escolha_trilha = st.selectbox(
+    "Escolha o som de fundo que mais te acalma para te acompanhar nesta jornada:",
+    list(opcoes_musica.keys())
 )
+
+# Se o usuário escolher uma música, carrega o player automático
+url_selecionada = opcoes_musica[escolha_trilha]
+if url_selecionada:
+    st.markdown(
+        f"""
+        <div style="background-color: #1B263B; padding: 10px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #415A77;">
+            <p style="margin: 0 0 5px 0; font-size: 0.85rem; color: #778DA9;">▶️ <b>Tocando agora:</b> {escolha_trilha}</p>
+            <audio autoplay loop controls style="width: 100%; height: 32px;">
+                <source src="{url_selecionada}" type="audio/mp3">
+                Seu navegador não suporta a execução de áudio.
+            </audio>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 # -----------------------------------------------------------------------------
 # 4. Cabeçalho e Mascote
