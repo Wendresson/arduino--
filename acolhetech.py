@@ -57,7 +57,7 @@ def verificar_seguranca(texto):
 st.title("💙 AcolheTech")
 st.caption("Do algoritmo ao acolhimento • Assistente de Bem-Estar Escolar")
 
-# Procura a imagem no projeto (tenta vários nomes comuns)
+# Procura a imagem no projeto
 nomes_possiveis_imagem = ["mascote.png", "mascote.jpeg", "mascote.jpg", "robo.png", "robo.jpeg"]
 imagem_encontrada = None
 
@@ -95,7 +95,7 @@ if st.session_state.crise:
 # PASSO 0: BOAS-VINDAS E PERGUNTA DO NOME
 if st.session_state.passo == 0:
     st.subheader("👋 Boas-vindas ao seu espaço seguro!")
-    st.write("Olá! Eu sou o **AcolheTech**, o teu assistente virtual de bem-estar e escuta empática.")
+    st.write("Olá! Eu sou o **AcolheTech**, o seu assistente virtual de bem-estar e escuta empática.")
     
     nome_input = st.text_input("Como você prefere ser chamado(a)?", key="input_nome_usuario")
     
@@ -112,9 +112,9 @@ if st.session_state.passo == 0:
 
 # PASSAGEM 1: TRIAGEM EMOCIONAL
 elif st.session_state.passo == 1:
-    st.info(f"Prazer em te conhecer, **{st.session_state.nome}**! Este é o teu espaço seguro para conversar sem julgamentos.")
-    st.write("### Passagem 1 de 5: Como está o teu dia?")
-    st.write("Qual destas situações está mais presente no teu dia de hoje?")
+    st.info(f"Prazer em te conhecer, **{st.session_state.nome}**! Este é o seu espaço seguro para conversar sem julgamentos.")
+    st.write("### Passagem 1 de 5: Como está o seu dia?")
+    st.write("Qual destas situações está mais presente no seu dia de hoje?")
     
     col1, col2 = st.columns(2)
     if col1.button("1 - Conflito na escola"):
@@ -137,7 +137,7 @@ elif st.session_state.passo == 2:
         if st.button("Discussão impulsiva"): st.session_state.opcao2 = "discussao"; st.session_state.passo = 3; st.rerun()
         
     elif st.session_state.opcao1 == "2":
-        st.write("A ansiedade faz a mente dar voltas. O que está a pesar mais?")
+        st.write("A ansiedade faz a mente dar voltas. O que está pesando mais?")
         if st.button("Medo do julgamento dos outros"): st.session_state.opcao2 = "julgamento"; st.session_state.passo = 3; st.rerun()
         if st.button("Insegurança com o futuro/notas"): st.session_state.opcao2 = "futuro"; st.session_state.passo = 3; st.rerun()
         if st.button("Sensação de agitação no corpo"): st.session_state.opcao2 = "corpo"; st.session_state.passo = 3; st.rerun()
@@ -149,55 +149,67 @@ elif st.session_state.passo == 2:
         if st.button("Dificuldade de concentração"): st.session_state.opcao2 = "foco"; st.session_state.passo = 3; st.rerun()
 
     else:
-        st.write("Sinto muito que esteja a sentir-se assim. O que reflete melhor o momento?")
+        st.write("Sinto muito que esteja se sentindo assim. O que reflete melhor o momento?")
         if st.button("Problemas em casa"): st.session_state.opcao2 = "casa"; st.session_state.passo = 3; st.rerun()
         if st.button("Sensação de não pertencer"): st.session_state.opcao2 = "isolamento"; st.session_state.passo = 3; st.rerun()
         if st.button("Cansaço emocional geral"): st.session_state.opcao2 = "tristeza"; st.session_state.passo = 3; st.rerun()
 
-# PASSAGEM 3: PRÁTICA DE REGULAÇÃO
+# PASSAGEM 3: PRÁTICA DE REGULAÇÃO (SEM TRAVAMENTOS)
 elif st.session_state.passo == 3:
     st.write("### Passagem 3 de 5: Pausa para autorregulação")
     st.write("Escolha uma atividade para acalmar a mente:")
     
-    opcao3 = st.radio("Selecione:", [
-        "1 - Respiração Guiada (5 Ciclos)", 
+    opcao3 = st.radio("Selecione uma opção:", [
+        "1 - Respiração Guiada (5 Ciclos Profundos)", 
         "2 - Técnica de Aterramento (Foco no Presente)", 
         "3 - Espaço Livre para Desabafo Escrito"
     ])
 
-    if st.button("Iniciar Atividade"):
-        if "1 -" in opcao3:
-            st.write("#### 🧘 Respiração Guiada")
-            bar = st.progress(0)
-            for c in range(1, 6):
-                st.write(f"**Ciclo {c}/5:** INSPIRA devagar...")
-                bar.progress(c * 20)
-                time.sleep(1.5)
-                st.write("SEGURA O AR...")
-                time.sleep(1.5)
-                st.write("EXPIRA devagar...")
-                time.sleep(1.5)
-            st.success("Excelente! O ritmo cardíaco e a tensão diminuíram.")
-            time.sleep(2)
-        elif "2 -" in opcao3:
-            st.write("#### 👁️ Técnica de Aterramento")
-            st.write("Olhe ao redor e identifique 3 objetos de cor azul.")
-            time.sleep(2)
-            st.write("Agora preste atenção em 2 sons ao fundo no ambiente.")
-            time.sleep(2)
-            st.success("Perfeito! O seu cérebro voltou para o momento presente.")
-            time.sleep(2)
-        else:
-            desabafo = st.text_area("Escreva aqui o que está a pesar no seu coração:")
-            if verificar_seguranca(desabafo):
-                st.session_state.crise = True
-                st.rerun()
-            else:
-                st.success("Colocar os pensamentos no papel tira o peso da mente!")
-                time.sleep(2)
+    if st.button("Realizar Atividade"):
+         container = st.empty()
+         
+         if "1 -" in opcao3:
+             bar = st.progress(0)
+             for c in range(1, 6):
+                 # Inspira
+                 container.info(f"🧘 **Ciclo {c}/5:** INSPIRA devagar pelo nariz...")
+                 bar.progress(int((c - 0.6) * 20))
+                 time.sleep(2)
+                 
+                 # Segura
+                 container.warning(f"🧘 **Ciclo {c}/5:** SEGURA O AR...")
+                 time.sleep(1.5)
+                 
+                 # Expira
+                 container.success(f"🧘 **Ciclo {c}/5:** EXPIRA devagar pela boca...")
+                 bar.progress(c * 20)
+                 time.sleep(2)
+                 
+             container.success("✨ **Excelente! O ritmo cardíaco e a tensão diminuíram.**")
+             time.sleep(2)
+             
+         elif "2 -" in opcao3:
+             container.info("👁️ **Olhe ao redor e identifique 3 objetos de cor azul...**")
+             time.sleep(3)
+             container.warning("👂 **Agora preste atenção em 2 sons ao fundo no ambiente...**")
+             time.sleep(3)
+             container.success("✨ **Perfeito! Seu cérebro voltou para o momento presente.**")
+             time.sleep(2)
+             
+         else:
+             desabafo = st.text_area("Escreva aqui o que está pesando no seu coração:")
+             if desabafo:
+                 if verificar_seguranca(desabafo):
+                     st.session_state.crise = True
+                     st.rerun()
+                 else:
+                     st.success("Colocar os pensamentos no papel tira o peso da mente!")
+                     time.sleep(2)
+             else:
+                 st.info("Pode avançar quando se sentir pronto(a).")
 
-        st.session_state.passo = 4
-        st.rerun()
+         st.session_state.passo = 4
+         st.rerun()
 
 # PASSAGEM 4: ORIENTAÇÃO
 elif st.session_state.passo == 4:
@@ -207,7 +219,7 @@ elif st.session_state.passo == 4:
     if st.session_state.opcao1 == "1":
         st.write("Não tente resolver conflitos no calor do momento. Espere a poeira baixar e expresse os seus sentimentos de forma calma.")
     elif st.session_state.opcao1 == "2":
-        st.write("Pensamentos de ansiedade não são fatos reais! Lembre-se de todas as vezes em que superou dias difíceis.")
+        st.write("Pensamentos de ansiedade não são fatos reais! Lembre-se de todas as vezes em que você superou dias difíceis.")
     elif st.session_state.opcao1 == "3":
         st.write("Divida tarefas grandes em blocos de 15 minutos. Um passo de cada vez já é um grande avanço!")
     else:
